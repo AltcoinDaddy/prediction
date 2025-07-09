@@ -1,10 +1,9 @@
-import FungibleToken from 0xFUNGIBLE_TOKEN_ADDRESS
+import FungibleToken from "FungibleToken"
 // FlowToken import might not be strictly needed if only FT interface is used for receiver
-// import FlowToken from 0xFLOW_TOKEN_ADDRESS
-import FlowWager from 0xFLOWWAGER_ADDRESS
+// import FlowToken from "FlowToken" // Keep as named import if uncommented
+import FlowWager from "FlowWager"
 
-// TODO: Replace 0xFUNGIBLE_TOKEN_ADDRESS, (0xFLOW_TOKEN_ADDRESS if used),
-// and 0xFLOWWAGER_ADDRESS with actual deployment addresses or flow.json aliases.
+// Imports are now named and will be resolved by flow.json
 
 /*
 Transaction for a user to claim their winnings from a resolved market.

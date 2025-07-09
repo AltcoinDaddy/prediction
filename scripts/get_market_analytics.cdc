@@ -1,5 +1,5 @@
-import FlowWagerMarkets from 0xFLOWWAGER_MARKETS_CONTRACT_ADDRESS
-// TODO: Replace 0xFLOWWAGER_MARKETS_CONTRACT_ADDRESS with actual deployment address.
+import FlowWagerMarkets from "FlowWagerMarkets"
+// Imports are now named and will be resolved by flow.json
 // This also implies that FlowWagerMarkets contract is deployed and initialized.
 
 /*

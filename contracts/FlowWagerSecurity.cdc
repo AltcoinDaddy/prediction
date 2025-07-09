@@ -61,8 +61,13 @@ access(all) contract FlowWagerSecurity {
         if url.length == 0 {
             return false
         }
-        // Assuming String.startsWith is available in Cadence 1.0
-        if !url.startsWith("http://") && !url.startsWith("https://") {
+        let httpPrefix = "http://"
+        let httpsPrefix = "https://"
+        // Basic URL format check
+        let startsWithHttp = url.length >= httpPrefix.length && url.slice(from: 0, upTo: httpPrefix.length) == httpPrefix
+        let startsWithHttps = url.length >= httpsPrefix.length && url.slice(from: 0, upTo: httpsPrefix.length) == httpsPrefix
+
+        if !startsWithHttp && !startsWithHttps {
             return false
         }
         if url.length > 512 {

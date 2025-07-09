@@ -1,9 +1,8 @@
-import FungibleToken from 0xFUNGIBLE_TOKEN_ADDRESS
-import FlowToken from 0xFLOW_TOKEN_ADDRESS
-import FlowWager from 0xFLOWWAGER_ADDRESS
+import FungibleToken from "FungibleToken"
+import FlowToken from "FlowToken"
+import FlowWager from "FlowWager"
 
-// TODO: Replace 0xFUNGIBLE_TOKEN_ADDRESS, 0xFLOW_TOKEN_ADDRESS,
-// and 0xFLOWWAGER_ADDRESS with actual deployment addresses or flow.json aliases.
+// Imports are now named and will be resolved by flow.json
 
 /*
 Transaction to create a new prediction market.

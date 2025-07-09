@@ -1,6 +1,6 @@
-import FlowWager from 0xFLOWWAGER_ADDRESS
+import FlowWager from "FlowWager"
 
-// TODO: Replace 0xFLOWWAGER_ADDRESS with actual deployment address or flow.json alias.
+// Imports are now named and will be resolved by flow.json
 
 /*
 Script to calculate a user's potential winnings from a specific resolved market.

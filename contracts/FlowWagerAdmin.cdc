@@ -119,8 +119,13 @@ access(all) contract FlowWagerAdmin {
 
     access(all) fun validateEvidence(evidence: Evidence): Bool {
         // Basic URL format check; more robust validation can be in FlowWagerSecurity
-        // Assuming String.startsWith is available
-        if !evidence.url.startsWith("http://") && !evidence.url.startsWith("https://") {
+        let httpPrefix = "http://"
+        let httpsPrefix = "https://"
+        let url = evidence.url
+        let startsWithHttp = url.length >= httpPrefix.length && url.slice(from: 0, upTo: httpPrefix.length) == httpPrefix
+        let startsWithHttps = url.length >= httpsPrefix.length && url.slice(from: 0, upTo: httpsPrefix.length) == httpsPrefix
+
+        if !startsWithHttp && !startsWithHttps {
             log("Evidence validation failed: URL format invalid for evidence related to market ".concat(evidence.marketId.toString()))
             return false
         }

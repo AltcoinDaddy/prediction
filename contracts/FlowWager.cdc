@@ -1,8 +1,8 @@
-import FungibleToken from 0xFUNGIBLE_TOKEN_ADDRESS
-import FlowToken from 0xFLOW_TOKEN_ADDRESS
+import FungibleToken from "FungibleToken"
+import FlowToken from "FlowToken"
+import FlowWagerTypes from "./FlowWagerTypes.cdc" // Import the new types contract
 
-// TODO: Replace 0xFUNGIBLE_TOKEN_ADDRESS and 0xFLOW_TOKEN_ADDRESS
-// with actual addresses during deployment (e.g., from flow.json).
+// Imports are now named and will be resolved by flow.json
 
 // TODO: Uncomment imports when contracts are used and paths are confirmed.
 // import FlowWagerEvents from "./FlowWagerEvents.cdc"
@@ -10,39 +10,18 @@ import FlowToken from 0xFLOW_TOKEN_ADDRESS
 
 access(all) contract FlowWager {
 
-    access(all) enum MarketCategory: UInt8 {
-        case Sports = 0
-        case Politics = 1
-        case Cryptocurrency = 2
-        case Economics = 3
-        case Entertainment = 4
-        case Technology = 5
-        case Science = 6
-        case Lifestyle = 7
-        case Weather = 8
-        case Gaming = 9
-        case Other = 10
-        case Meta = 11 // For markets about FlowWager itself
-    }
-
-    access(all) enum MarketStatus: UInt8 {
-        case Active = 0
-        case PendingResolution = 1
-        case Resolved = 2
-        case Cancelled = 3
-        case EmergencyResolved = 4
-    }
+    // MarketCategory and MarketStatus enums are now in FlowWagerTypes
 
     access(all) resource Market {
         access(all) let id: UInt64
         access(all) let title: String
         access(all) let description: String
-        access(all) let category: MarketCategory
+        access(all) let category: FlowWagerTypes.MarketCategory // Updated type
         access(all) let creator: Address
         access(all) let creationTime: UFix64
         access(all) let endTime: UFix64
         access(all) let options: [String]
-        access(all) var status: MarketStatus
+        access(all) var status: FlowWagerTypes.MarketStatus // Updated type
         access(all) var outcome: String?
         access(all) var evidenceURL: String?
         access(all) var resolutionTimestamp: UFix64?
@@ -56,7 +35,7 @@ access(all) contract FlowWager {
             id: UInt64,
             title: String,
             description: String,
-            category: MarketCategory,
+            category: FlowWagerTypes.MarketCategory, // Updated type
             creator: Address,
             creationTime: UFix64,
             endTime: UFix64,
@@ -79,7 +58,7 @@ access(all) contract FlowWager {
             self.creationTime = creationTime
             self.endTime = endTime
             self.options = options
-            self.status = MarketStatus.Active
+            self.status = FlowWagerTypes.MarketStatus.Active // Updated type
             self.outcome = nil
             self.evidenceURL = nil
             self.resolutionTimestamp = nil
@@ -98,7 +77,7 @@ access(all) contract FlowWager {
         access(all) fun placePrediction(predictor: Address, option: String, amount: UFix64) {
             // TODO: Integrate FlowWagerSecurity.validateBetAmount(amount)
             pre {
-                self.status == MarketStatus.Active: "Market is not active"
+                self.status == FlowWagerTypes.MarketStatus.Active: "Market is not active"
                 getCurrentBlock().timestamp < self.endTime: "Market has ended"
                 self.options.contains(option): "Invalid option provided"
                 amount > 0.0: "Prediction amount must be positive"
@@ -122,13 +101,13 @@ access(all) contract FlowWager {
 
         access(contract) fun internalResolve(outcome: String, evidenceURL: String, resolver: Address) {
             pre {
-                self.status == MarketStatus.PendingResolution || self.status == MarketStatus.Active : "Market is not in a resolvable state"
+                self.status == FlowWagerTypes.MarketStatus.PendingResolution || self.status == FlowWagerTypes.MarketStatus.Active : "Market is not in a resolvable state"
                 self.options.contains(outcome): "Invalid outcome for this market"
                 evidenceURL.length > 0 : "Evidence URL cannot be empty"
             }
             self.outcome = outcome
             self.evidenceURL = evidenceURL
-            self.status = MarketStatus.Resolved
+            self.status = FlowWagerTypes.MarketStatus.Resolved
             self.resolutionTimestamp = getCurrentBlock().timestamp
             // TODO: Emit MarketResolved event
         }
@@ -140,14 +119,14 @@ access(all) contract FlowWager {
             }
             self.outcome = outcome
             self.evidenceURL = evidenceURL
-            self.status = MarketStatus.EmergencyResolved
+            self.status = FlowWagerTypes.MarketStatus.EmergencyResolved
             self.resolutionTimestamp = getCurrentBlock().timestamp
             // TODO: Emit MarketEmergencyResolution event
         }
 
         access(all) fun getUserWinnings(user: Address): UFix64 {
             pre {
-                self.status == MarketStatus.Resolved || self.status == MarketStatus.EmergencyResolved : "Market is not yet resolved"
+                self.status == FlowWagerTypes.MarketStatus.Resolved || self.status == FlowWagerTypes.MarketStatus.EmergencyResolved : "Market is not yet resolved"
                 self.outcome != nil : "Market outcome is not set"
             }
 
@@ -175,7 +154,7 @@ access(all) contract FlowWager {
         }
 
         access(all) fun canEnableEmergencyResolution(): Bool {
-            return self.status == MarketStatus.PendingResolution && (getCurrentBlock().timestamp > (self.endTime + FlowWager.RESOLUTION_WINDOW))
+            return self.status == FlowWagerTypes.MarketStatus.PendingResolution && (getCurrentBlock().timestamp > (self.endTime + FlowWager.RESOLUTION_WINDOW))
         }
 
         access(all) fun getMarketInfo(): {String: AnyStruct} {
@@ -210,8 +189,8 @@ access(all) contract FlowWager {
         }
 
         access(all) fun trySetToPendingResolution() {
-            if self.status == MarketStatus.Active && getCurrentBlock().timestamp >= self.endTime {
-                self.status = MarketStatus.PendingResolution
+            if self.status == FlowWagerTypes.MarketStatus.Active && getCurrentBlock().timestamp >= self.endTime {
+                self.status = FlowWagerTypes.MarketStatus.PendingResolution
                 // TODO: Emit MarketStatusUpdated event
             }
         }
@@ -301,7 +280,7 @@ access(all) contract FlowWager {
     ): UInt64 {
         // TODO: Integrate FlowWagerSecurity validation
         pre {
-            MarketCategory.fromRawValue(category) != nil : "Invalid market category"
+            FlowWagerTypes.MarketCategory(rawValue: category) != nil : "Invalid market category"
         }
 
         let marketCreator = payment.owner!.address
@@ -314,7 +293,7 @@ access(all) contract FlowWager {
              platformVaultRef.deposit(from: <-feeVault)
         }
 
-        let marketCategory = MarketCategory.fromRawValue(category) ?? panic("Invalid category raw value")
+        let marketCategory = FlowWagerTypes.MarketCategory(rawValue: category) ?? panic("Invalid category raw value")
 
         let marketId = self.nextMarketId
         let newMarket <- create Market(
@@ -365,11 +344,11 @@ access(all) contract FlowWager {
 
         let market = self.markets[marketId]!
 
-        if market.status == MarketStatus.Active && getCurrentBlock().timestamp >= market.endTime {
+        if market.status == FlowWagerTypes.MarketStatus.Active && getCurrentBlock().timestamp >= market.endTime {
              market.trySetToPendingResolution()
         }
 
-        assert(market.status == MarketStatus.PendingResolution, message: "Market is not yet pending resolution.")
+        assert(market.status == FlowWagerTypes.MarketStatus.PendingResolution, message: "Market is not yet pending resolution.")
 
         market.internalResolve(outcome: outcome, evidenceURL: evidenceURL, resolver: adminCapRef.adminAddress)
         // Note: Fee distribution to creator is a TODO.
@@ -387,7 +366,7 @@ access(all) contract FlowWager {
             self.markets[marketId] != nil : "Market not found"
         }
         let market = self.markets[marketId]!
-        assert(market.status == MarketStatus.Resolved || market.status == MarketStatus.EmergencyResolved, message: "Market is not resolved yet.")
+        assert(market.status == FlowWagerTypes.MarketStatus.Resolved || market.status == FlowWagerTypes.MarketStatus.EmergencyResolved, message: "Market is not resolved yet.")
         assert(market.outcome != nil, message: "Market outcome is not set.")
 
         let winningsAmount = market.getUserWinnings(user: userAddress)
@@ -451,7 +430,7 @@ access(all) contract FlowWager {
             adminCapRef.hasPermission(permission: "emergency_resolve") : "Admin does not have permission for emergency resolution." // TODO: Define this permission
         }
         let market = self.markets[marketId]!
-        assert(market.status == MarketStatus.PendingResolution || market.status == MarketStatus.Active, "Market is not in a state that can be emergency resolved.")
+        assert(market.status == FlowWagerTypes.MarketStatus.PendingResolution || market.status == FlowWagerTypes.MarketStatus.Active, "Market is not in a state that can be emergency resolved.")
         assert(getCurrentBlock().timestamp >= market.endTime, "Emergency resolution typically used for markets past their end time.")
 
         market.internalEmergencyResolve(outcome: outcome, evidenceURL: evidenceURL, resolver: adminCapRef.adminAddress)
@@ -476,10 +455,8 @@ access(all) contract FlowWager {
     }
 
     access(all) fun getMarket(marketId: UInt64): {String: AnyStruct}? {
+        // Removed market.trySetToPendingResolution() - should be handled by a transaction
         if let market = self.markets[marketId] {
-            if market.status == MarketStatus.Active && getCurrentBlock().timestamp >= market.endTime {
-                 market.trySetToPendingResolution()
-            }
             return market.getMarketInfo()
         }
         return nil
@@ -489,6 +466,7 @@ access(all) contract FlowWager {
         let allMarketInfos: [{String: AnyStruct}] = []
         let marketIds = self.markets.keys
         for id in marketIds {
+            // getMarket no longer mutates, so this is safe.
             if let marketInfo = self.getMarket(marketId: id) {
                  allMarketInfos.append(marketInfo)
             }
@@ -497,15 +475,13 @@ access(all) contract FlowWager {
     }
 
     access(all) fun getMarketsByCategory(category: UInt8): [{String: AnyStruct}] {
-        let categoryEnum = MarketCategory.fromRawValue(category) ?? panic("Invalid category raw value")
+        let categoryEnum = FlowWagerTypes.MarketCategory(rawValue: category) ?? panic("Invalid category raw value")
         let filteredMarketInfos: [{String: AnyStruct}] = []
         let marketIds = self.markets.keys
         for id in marketIds {
             let market = self.markets[id]!
             if market.category == categoryEnum {
-                if market.status == MarketStatus.Active && getCurrentBlock().timestamp >= market.endTime {
-                    market.trySetToPendingResolution()
-                }
+                // Removed market.trySetToPendingResolution()
                 filteredMarketInfos.append(market.getMarketInfo())
             }
         }
@@ -513,15 +489,8 @@ access(all) contract FlowWager {
     }
 
     access(all) fun getMarketsByStatus(status: UInt8): [{String: AnyStruct}] {
-        let statusEnum = MarketStatus.fromRawValue(status) ?? panic("Invalid status raw value")
-        if statusEnum == MarketStatus.Active || statusEnum == MarketStatus.PendingResolution {
-            for key in self.markets.keys {
-                let market = self.markets[key]!
-                if market.status == MarketStatus.Active && getCurrentBlock().timestamp >= market.endTime {
-                    market.trySetToPendingResolution()
-                }
-            }
-        }
+        let statusEnum = FlowWagerTypes.MarketStatus(rawValue: status) ?? panic("Invalid status raw value")
+        // Removed loop that called market.trySetToPendingResolution()
 
         let filteredMarketInfos: [{String: AnyStruct}] = []
         let marketIds = self.markets.keys
@@ -550,16 +519,14 @@ access(all) contract FlowWager {
 
         for key in self.markets.keys {
             let market = self.markets[key]!
-            if market.status == MarketStatus.Active && getCurrentBlock().timestamp >= market.endTime {
-                market.trySetToPendingResolution()
-            }
+            // Removed market.trySetToPendingResolution()
 
             totalMarkets = totalMarkets + 1
             totalVolumeAcrossAllMarkets = totalVolumeAcrossAllMarkets + market.totalPool
 
-            if market.status == MarketStatus.Active { activeMarkets = activeMarkets + 1 }
-            else if market.status == MarketStatus.PendingResolution { pendingResolutionMarkets = pendingResolutionMarkets + 1 }
-            else if market.status == MarketStatus.Resolved || market.status == MarketStatus.EmergencyResolved { resolvedMarkets = resolvedMarkets + 1 }
+            if market.status == FlowWagerTypes.MarketStatus.Active { activeMarkets = activeMarkets + 1 }
+            else if market.status == FlowWagerTypes.MarketStatus.PendingResolution { pendingResolutionMarkets = pendingResolutionMarkets + 1 }
+            else if market.status == FlowWagerTypes.MarketStatus.Resolved || market.status == FlowWagerTypes.MarketStatus.EmergencyResolved { resolvedMarkets = resolvedMarkets + 1 }
         }
 
         return {
