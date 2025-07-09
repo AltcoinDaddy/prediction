@@ -1,5 +1,5 @@
-import FlowWagerMarkets from 0xFLOWWAGER_MARKETS_ADDRESS
-// TODO: Replace 0xFLOWWAGER_MARKETS_ADDRESS with actual deployment address or flow.json alias.
+import FlowWagerMarkets from "FlowWagerMarkets"
+// Imports are now named and will be resolved by flow.json
 // This script also assumes FlowWagerMarkets has been correctly initialized with the
 // address of the FlowWager contract and the public path to its MarketDataProvider capability.
 

@@ -1,5 +1,4 @@
 {
-  "version": "1.8.0",
   "contracts": {
     "FungibleToken": {
       "source": "./cadence/contracts/standard/FungibleToken.cdc",
@@ -37,7 +36,8 @@
     "FlowWagerSecurity": "./contracts/FlowWagerSecurity.cdc",
     "FlowWagerAdmin": "./contracts/FlowWagerAdmin.cdc",
     "FlowWager": "./contracts/FlowWager.cdc",
-    "FlowWagerMarkets": "./contracts/FlowWagerMarkets.cdc"
+    "FlowWagerMarkets": "./contracts/FlowWagerMarkets.cdc",
+    "FlowWagerTypes": "./contracts/FlowWagerTypes.cdc"
   },
   "networks": {
     "emulator": "127.0.0.1:3569",
@@ -58,53 +58,6 @@
       "key": "YOUR_MAINNET_ACCOUNT_PRIVATE_KEY_ (USE_ENV_VARIABLE_RECOMMENDED)"
     }
   },
-  "aliases": {
-    "FUNGIBLE_TOKEN_ADDRESS": {
-        "emulator": "0xee82856bf20e2aa6",
-        "testnet": "0x9a0766d93b6608b7",
-        "mainnet": "0xf233dcee88fe0abe"
-    },
-    "FLOW_TOKEN_ADDRESS": {
-        "emulator": "0x0ae53cb6e3f42a79",
-        "testnet": "0x7e60df042a9c0868",
-        "mainnet": "0x1654653399040a61"
-    },
-    "NON_FUNGIBLE_TOKEN_ADDRESS": {
-        "emulator": "0x631e88ae7f1d7c20",
-        "testnet": "0x631e88ae7f1d7c20",
-        "mainnet": "0x1d7e57aa55817448"
-    },
-    "METADATA_VIEWS_ADDRESS": {
-        "emulator": "0x631e88ae7f1d7c20",
-        "testnet": "0x631e88ae7f1d7c20",
-        "mainnet": "0x1d7e57aa55817448"
-    },
-    "FLOWWAGER_EVENTS_ADDRESS": {
-        "emulator": "0xf8d6e0586b0a20c7",
-        "testnet": "YOUR_TESTNET_ACCOUNT_ADDRESS",
-        "mainnet": "YOUR_MAINNET_ACCOUNT_ADDRESS"
-    },
-    "FLOWWAGER_SECURITY_ADDRESS": {
-        "emulator": "0xf8d6e0586b0a20c7",
-        "testnet": "YOUR_TESTNET_ACCOUNT_ADDRESS",
-        "mainnet": "YOUR_MAINNET_ACCOUNT_ADDRESS"
-    },
-    "FLOWWAGER_ADMIN_ADDRESS": {
-        "emulator": "0xf8d6e0586b0a20c7",
-        "testnet": "YOUR_TESTNET_ACCOUNT_ADDRESS",
-        "mainnet": "YOUR_MAINNET_ACCOUNT_ADDRESS"
-    },
-    "FLOWWAGER_ADDRESS": {
-        "emulator": "0xf8d6e0586b0a20c7",
-        "testnet": "YOUR_TESTNET_ACCOUNT_ADDRESS",
-        "mainnet": "YOUR_MAINNET_ACCOUNT_ADDRESS"
-    },
-    "FLOWWAGER_MARKETS_ADDRESS": {
-        "emulator": "0xf8d6e0586b0a20c7",
-        "testnet": "YOUR_TESTNET_ACCOUNT_ADDRESS",
-        "mainnet": "YOUR_MAINNET_ACCOUNT_ADDRESS"
-    }
-  },
   "deployments": {
     "emulator": {
       "emulator-account": [
@@ -112,6 +65,7 @@
         "FlowToken",
         "NonFungibleToken",
         "MetadataViews",
+        "FlowWagerTypes", // Deploy types first
         "FlowWagerEvents",
         "FlowWagerSecurity",
         "FlowWagerAdmin",

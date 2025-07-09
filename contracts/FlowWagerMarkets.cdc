@@ -1,16 +1,12 @@
 // FlowWagerMarkets.cdc
 // Purpose: Advanced market management, analytics, and creator statistics for FlowWager
 
-import FlowWager from "./FlowWager.cdc" // Import the main FlowWager contract
+import FlowWager from "FlowWager" // Import the main FlowWager contract, resolved by flow.json
+import FlowWagerTypes from "./FlowWagerTypes.cdc" // Import the shared types
+import MarketDataProvider from "./MarketDataProvider.cdc" // Import the interface
 
-// This interface represents what FlowWagerMarkets expects the FlowWager contract to provide.
-// FlowWager contract would need to implement this interface and publish a capability to it.
-access(all) contract interface MarketDataProvider {
-    access(all) fun getAllMarketDataViews(): [FlowWagerMarkets.MarketDataView]
-    access(all) fun getMarketDataView(marketId: UInt64): FlowWagerMarkets.MarketDataView?
-    access(all) fun getCreatorTotalEarnings(creatorAddress: Address): UFix64
-    // TODO: Ensure FlowWager.cdc has a public capability path for this interface, e.g., /public/FlowWagerMarketDataProvider
-}
+// MarketDataProvider interface is now in its own file.
+// MarketDataView struct is now in FlowWagerTypes.cdc
 
 access(all) contract FlowWagerMarkets {
 
@@ -24,7 +20,7 @@ access(all) contract FlowWagerMarkets {
         access(all) let createdAt: UFix64
         access(all) let endedAt: UFix64
         access(all) let resolvedAt: UFix64?
-        access(all) let category: UInt8
+        access(all) let category: UInt8 // This is FlowWagerTypes.MarketCategory.rawValue
         access(all) let creator: Address
         access(all) let resolutionTime: UFix64?
 
@@ -79,42 +75,22 @@ access(all) contract FlowWagerMarkets {
         }
     }
 
-    // Used by MarketDataProvider interface in FlowWager.cdc
-    access(all) struct MarketDataView {
-        access(all) let id: UInt64
-        access(all) let totalPool: UFix64
-        access(all) let participantCount: UInt64
-        access(all) let totalPredictionsCount: UInt64 // TODO: Ensure FlowWager.Market tracks this
-        access(all) let creationTime: UFix64
-        access(all) let endTime: UFix64
-        access(all) let resolutionTimestamp: UFix64?
-        access(all) let category: FlowWager.MarketCategory
-        access(all) let creator: Address
-        access(all) let status: FlowWager.MarketStatus
+    // MarketDataView struct is now defined in FlowWagerTypes.cdc
 
-        init(id: UInt64, totalPool: UFix64, participantCount: UInt64, totalPredictionsCount: UInt64,
-             creationTime: UFix64, endTime: UFix64, resolutionTimestamp: UFix64?,
-             category: FlowWager.MarketCategory, creator: Address, status: FlowWager.MarketStatus) {
-            self.id = id
-            self.totalPool = totalPool
-            self.participantCount = participantCount
-            self.totalPredictionsCount = totalPredictionsCount
-            self.creationTime = creationTime
-            self.endTime = endTime
-            self.resolutionTimestamp = resolutionTimestamp
-            self.category = category
-            self.creator = creator
-            self.status = status
-        }
+    // Local struct for sorting markets by volume, used in getMarketsByVolume
+    access(all) struct MarketVol {
+        access(all) let id: UInt64
+        access(all) let volume: UFix64
+        init(id: UInt64, volume: UFix64) { self.id = id; self.volume = volume }
     }
 
     access(all) let flowWagerContractAddress: Address
     // Define the public capability path where FlowWager is expected to publish its MarketDataProvider capability.
     access(all) let marketDataProviderPublicPath: PublicPath
 
-    access(all) fun getMarketDataProvider(): &{MarketDataProvider} {
+    access(all) fun getMarketDataProvider(): &{MarketDataProvider.MarketDataProvider} {
         return getAccount(self.flowWagerContractAddress)
-            .capabilities.borrow<&{MarketDataProvider}>(self.marketDataProviderPublicPath)
+            .capabilities.borrow<&{MarketDataProvider.MarketDataProvider}>(self.marketDataProviderPublicPath)
             ?? panic("Could not borrow MarketDataProvider capability from FlowWager contract. Ensure it's published.")
     }
 
@@ -144,7 +120,7 @@ access(all) contract FlowWagerMarkets {
             if mv.creator == creatorAddress {
                 marketsCreatedCount = marketsCreatedCount + 1
                 totalVolumeGenerated = totalVolumeGenerated + mv.totalPool
-                if mv.status == FlowWager.MarketStatus.Resolved || mv.status == FlowWager.MarketStatus.EmergencyResolved {
+                if mv.status == FlowWagerTypes.MarketStatus.Resolved || mv.status == FlowWagerTypes.MarketStatus.EmergencyResolved {
                     resolvedMarketsCount = resolvedMarketsCount + 1
                     if mv.resolutionTimestamp != nil && mv.endTime < mv.resolutionTimestamp! {
                         totalResolutionDurationForResolved = totalResolutionDurationForResolved + (mv.resolutionTimestamp! - mv.endTime)
@@ -214,8 +190,8 @@ access(all) contract FlowWagerMarkets {
             let categoryRaw = mv.category.rawValue
             if categoryData[categoryRaw] == nil {
                 categoryData[categoryRaw] = {
-                    "category": categoryRaw, "totalMarkets": UInt64(0), "totalVolume": 0.0,
-                    "totalParticipants": UInt64(0), "activeMarkets": UInt64(0)
+                    "category": categoryRaw, "totalMarkets": 0 as UInt64, "totalVolume": 0.0,
+                    "totalParticipants": 0 as UInt64, "activeMarkets": 0 as UInt64
                 }
             }
 
@@ -223,7 +199,7 @@ access(all) contract FlowWagerMarkets {
             currentData["totalMarkets"] = (currentData["totalMarkets"] as! UInt64) + 1
             currentData["totalVolume"] = (currentData["totalVolume"] as! UFix64) + mv.totalPool
             currentData["totalParticipants"] = (currentData["totalParticipants"] as! UInt64) + mv.participantCount
-            if mv.status == FlowWager.MarketStatus.Active {
+            if mv.status == FlowWagerTypes.MarketStatus.Active {
                  currentData["activeMarkets"] = (currentData["activeMarkets"] as! UInt64) + 1
             }
             categoryData[categoryRaw] = currentData
@@ -236,11 +212,7 @@ access(all) contract FlowWagerMarkets {
         let provider = self.getMarketDataProvider()
         let allMarketViews = provider.getAllMarketDataViews()
 
-        struct MarketVol { // Local struct for sorting
-            access(all) let id: UInt64
-            access(all) let volume: UFix64
-            init(id: UInt64, volume: UFix64) { self.id = id; self.volume = volume }
-        }
+        // MarketVol struct is now defined at the contract level
         var marketsWithVol: [MarketVol] = []
         for mv in allMarketViews { marketsWithVol.append(MarketVol(id: mv.id, volume: mv.totalPool)) }
 
@@ -273,8 +245,8 @@ access(all) contract FlowWagerMarkets {
         for mv in allMarketViews {
             totalMarkets = totalMarkets + 1
             totalPlatformVolume = totalPlatformVolume + mv.totalPool
-            if mv.status == FlowWager.MarketStatus.Active { activeMarkets = activeMarkets + 1 }
-            else if mv.status == FlowWager.MarketStatus.Resolved || mv.status == FlowWager.MarketStatus.EmergencyResolved { resolvedMarkets = resolvedMarkets + 1 }
+            if mv.status == FlowWagerTypes.MarketStatus.Active { activeMarkets = activeMarkets + 1 }
+            else if mv.status == FlowWagerTypes.MarketStatus.Resolved || mv.status == FlowWagerTypes.MarketStatus.EmergencyResolved { resolvedMarkets = resolvedMarkets + 1 }
         }
 
         return {
