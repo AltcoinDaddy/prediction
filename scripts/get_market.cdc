@@ -1,5 +1,6 @@
-import FlowWager from 0xFLOWWAGER_CONTRACT_ADDRESS
-// TODO: Replace 0xFLOWWAGER_CONTRACT_ADDRESS with actual deployment address.
+import FlowWager from 0xFLOWWAGER_ADDRESS
+
+// TODO: Replace 0xFLOWWAGER_ADDRESS with actual deployment address or flow.json alias.
 
 /*
 Script to get detailed information about a specific market.
@@ -8,13 +9,11 @@ Parameters:
 - marketId: UInt64 - The ID of the market to retrieve.
 
 Returns:
-- {String: AnyStruct}? - A dictionary containing market details, or nil if not found.
-                         The structure matches the one returned by FlowWager.getMarket().
-                         This includes calling market.trySetToPendingResolution() before returning info.
+- {String: AnyStruct}? - Market details, or nil if not found.
+                         Matches FlowWager.getMarket() return.
 */
 
-pub fun main(marketId: UInt64): {String: AnyStruct}? {
-    // Call the getMarket view function on the FlowWager contract
+access(all) fun main(marketId: UInt64): {String: AnyStruct}? {
     let marketInfo = FlowWager.getMarket(marketId: marketId)
 
     if marketInfo == nil {

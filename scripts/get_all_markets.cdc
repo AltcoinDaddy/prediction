@@ -1,16 +1,16 @@
-import FlowWager from 0xFLOWWAGER_CONTRACT_ADDRESS
-// TODO: Replace 0xFLOWWAGER_CONTRACT_ADDRESS with actual deployment address.
+import FlowWager from 0xFLOWWAGER_ADDRESS
+
+// TODO: Replace 0xFLOWWAGER_ADDRESS with actual deployment address or flow.json alias.
 
 /*
 Script to get a list of all markets with their detailed information.
 
 Returns:
-- [{String: AnyStruct}] - An array of dictionaries, each representing a market.
-                          The structure matches FlowWager.getAllMarkets().
-                          This includes calling market.trySetToPendingResolution() for relevant markets.
+- [{String: AnyStruct}] - An array of market detail dictionaries.
+                          Matches FlowWager.getAllMarkets() return.
 */
 
-pub fun main(): [{String: AnyStruct}] {
+access(all) fun main(): [{String: AnyStruct}] {
     let allMarkets = FlowWager.getAllMarkets()
 
     log("Retrieved ".concat(allMarkets.length.toString()).concat(" markets."))

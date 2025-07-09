@@ -1,22 +1,19 @@
-import FlowWager from 0xFLOWWAGER_CONTRACT_ADDRESS
-// TODO: Replace 0xFLOWWAGER_CONTRACT_ADDRESS with actual deployment address.
+import FlowWager from 0xFLOWWAGER_ADDRESS
+
+// TODO: Replace 0xFLOWWAGER_ADDRESS with actual deployment address or flow.json alias.
 
 /*
 Script to get a list of markets filtered by a specific status.
 
 Parameters:
-- statusRawValue: UInt8 - The raw UInt8 value for the market status to filter by (e.g., Active, Resolved).
+- statusRawValue: UInt8 - The raw UInt8 value for the market status.
 
 Returns:
-- [{String: AnyStruct}] - An array of dictionaries, each representing a market with the specified status.
-                          The structure matches FlowWager.getMarketsByStatus().
+- [{String: AnyStruct}] - An array of market detail dictionaries with the specified status.
 */
 
-pub fun main(statusRawValue: UInt8): [{String: AnyStruct}] {
-    // Validate if the statusRawValue is a valid MarketStatus
-    // FlowWager.MarketStatus.fromRawValue(statusRawValue) will panic if invalid inside the contract function.
-    // For now, assume the contract handles invalid raw values.
-
+access(all) fun main(statusRawValue: UInt8): [{String: AnyStruct}] {
+    // The FlowWager.getMarketsByStatus function will panic if statusRawValue is invalid.
     let markets = FlowWager.getMarketsByStatus(status: statusRawValue)
 
     log("Retrieved ".concat(markets.length.toString()).concat(" markets for status raw value: ").concat(statusRawValue.toString()))

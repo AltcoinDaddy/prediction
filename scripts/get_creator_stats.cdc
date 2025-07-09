@@ -1,7 +1,7 @@
-import FlowWagerMarkets from 0xFLOWWAGER_MARKETS_CONTRACT_ADDRESS
-// TODO: Replace 0xFLOWWAGER_MARKETS_CONTRACT_ADDRESS with actual deployment address.
-// This also implies that FlowWagerMarkets contract is deployed and initialized
-// with a reference to the main FlowWager contract instance.
+import FlowWagerMarkets from 0xFLOWWAGER_MARKETS_ADDRESS
+// TODO: Replace 0xFLOWWAGER_MARKETS_ADDRESS with actual deployment address or flow.json alias.
+// This script also assumes FlowWagerMarkets has been correctly initialized with the
+// address of the FlowWager contract and the public path to its MarketDataProvider capability.
 
 /*
 Script to get statistics for a specific market creator.
@@ -10,13 +10,11 @@ Parameters:
 - creatorAddress: Address - The address of the creator.
 
 Returns:
-- FlowWagerMarkets.CreatorStats? - A struct containing the creator's statistics,
-                                   or nil if the creator is not found or has no stats.
-                                   (The CreatorStats struct is defined in FlowWagerMarkets.cdc)
+- FlowWagerMarkets.CreatorStats? - Creator's statistics, or nil if not found.
+                                   (CreatorStats struct is defined in FlowWagerMarkets.cdc)
 */
 
-pub fun main(creatorAddress: Address): FlowWagerMarkets.CreatorStats? {
-    // Call the getCreatorStats function on the FlowWagerMarkets contract
+access(all) fun main(creatorAddress: Address): FlowWagerMarkets.CreatorStats? {
     let stats = FlowWagerMarkets.getCreatorStats(creatorAddress: creatorAddress)
 
     if stats == nil {
