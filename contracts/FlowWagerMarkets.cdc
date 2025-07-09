@@ -91,7 +91,7 @@ access(all) contract FlowWagerMarkets {
     access(all) fun getMarketDataProvider(): &{MarketDataProvider.MarketDataProvider} {
         return getAccount(self.flowWagerContractAddress)
             .capabilities.borrow<&{MarketDataProvider.MarketDataProvider}>(self.marketDataProviderPublicPath)
-            ?? panic("Could not borrow MarketDataProvider capability from FlowWager contract. Ensure it's published.")
+            ?? panic("Could not borrow MarketDataProvider capability from FlowWager contract. Ensure it's published.") // This was already correct, ensuring consistency
     }
 
     access(all) fun getMarketAnalytics(marketId: UInt64): MarketAnalytics? {

@@ -19,7 +19,7 @@ transaction(newAdminAddress: Address, permissions: [String]) {
         // Assumes admins store their capability at /storage/flowWagerAdminCapability.
         // Need auth(Storage) to access signer.storage.borrow
         self.callingAdminCapability = signer.storage.borrow<&FlowWager.AdminCapability>(from: /storage/flowWagerAdminCapability)
-            ?? panic(message: "Could not borrow AdminCapability from signer. Ensure you are an admin and the capability is at the correct path.")
+            ?? panic("Could not borrow AdminCapability from signer. Ensure you are an admin and the capability is at the correct path.")
 
         // The FlowWager.addAdmin function itself performs permission checks.
     }

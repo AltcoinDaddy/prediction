@@ -288,11 +288,11 @@ access(all) contract FlowWager {
              assert(payment.balance >= self.MARKET_CREATION_FEE, message: "Insufficient payment for market creation fee")
              let feeVault <- payment.withdraw(amount: self.MARKET_CREATION_FEE)
              let platformVaultRef = self.account.storage.borrow<&FlowToken.Vault>(from: self.platformVaultPath)
-                ?? panic(message: "Could not borrow platform vault reference")
+                ?? panic("Could not borrow platform vault reference")
              platformVaultRef.deposit(from: <-feeVault)
         }
 
-        let marketCategory = FlowWagerTypes.MarketCategory(rawValue: category) ?? panic(message: "Invalid category raw value")
+        let marketCategory = FlowWagerTypes.MarketCategory(rawValue: category) ?? panic("Invalid category raw value")
 
         let marketId = self.nextMarketId
         let newMarket <- create Market(
@@ -322,13 +322,13 @@ access(all) contract FlowWager {
             payment.balance > 0.0 : "Prediction amount must be positive"
             self.markets[marketId] != nil : "Market with the given ID does not exist"
         }
-        let market = self.markets[marketId] ?? panic(message: "Market not found")
+        let market = self.markets[marketId] ?? panic("Market not found")
         let predictor = payment.owner!.address
 
         market.placePrediction(predictor: predictor, option: option, amount: payment.balance)
 
         let platformVaultRef = self.account.storage.borrow<&FlowToken.Vault>(from: self.platformVaultPath)
-            ?? panic(message: "Could not borrow platform vault reference for prediction")
+            ?? panic("Could not borrow platform vault reference for prediction")
         platformVaultRef.deposit(from: <-payment)
 
         let currentPredictorCount = self.userPredictionsPlacedCount[predictor] ?? 0
@@ -446,7 +446,7 @@ access(all) contract FlowWager {
         }
 
         let platformVaultRef = self.account.storage.borrow<&FlowToken.Vault>(from: self.platformVaultPath)
-            ?? panic(message: "Could not borrow platform vault reference for fee withdrawal")
+            ?? panic("Could not borrow platform vault reference for fee withdrawal")
 
         assert(platformVaultRef.balance >= amount, message: "Insufficient balance in platform vault.")
 
@@ -476,7 +476,7 @@ access(all) contract FlowWager {
     }
 
     access(all) fun getMarketsByCategory(category: UInt8): [{String: AnyStruct}] {
-        let categoryEnum = FlowWagerTypes.MarketCategory(rawValue: category) ?? panic(message: "Invalid category raw value")
+        let categoryEnum = FlowWagerTypes.MarketCategory(rawValue: category) ?? panic("Invalid category raw value")
         let filteredMarketInfos: [{String: AnyStruct}] = []
         let marketIds = self.markets.keys
         for id in marketIds {
@@ -490,7 +490,7 @@ access(all) contract FlowWager {
     }
 
     access(all) fun getMarketsByStatus(status: UInt8): [{String: AnyStruct}] {
-        let statusEnum = FlowWagerTypes.MarketStatus(rawValue: status) ?? panic(message: "Invalid status raw value")
+        let statusEnum = FlowWagerTypes.MarketStatus(rawValue: status) ?? panic("Invalid status raw value")
         // Removed loop that called market.trySetToPendingResolution()
 
         let filteredMarketInfos: [{String: AnyStruct}] = []
@@ -516,7 +516,7 @@ access(all) contract FlowWager {
         var totalVolumeAcrossAllMarkets = 0.0
 
         let platformVaultRef = self.account.storage.borrow<&FlowToken.Vault>(from: self.platformVaultPath)
-            ?? panic(message: "Could not borrow platform vault reference for stats")
+            ?? panic("Could not borrow platform vault reference for stats")
 
         for key in self.markets.keys {
             let market = self.markets[key]!
@@ -539,7 +539,7 @@ access(all) contract FlowWager {
     }
 
     access(all) fun getUserPredictionsForMarket(marketId: UInt64, userAddress: Address): {String: UFix64}? {
-        let market = self.markets[marketId] ?? panic(message: "Market not found")
+        let market = self.markets[marketId] ?? panic("Market not found")
         if let userPredictions = market.predictions[userAddress] {
             return userPredictions
         }
