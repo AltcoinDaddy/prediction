@@ -14,7 +14,7 @@ Returns:
                                       (The MarketAnalytics struct is defined in FlowWagerMarkets.cdc)
 */
 
-pub fun main(marketId: UInt64): FlowWagerMarkets.MarketAnalytics? {
+access(all) fun main(marketId: UInt64): FlowWagerMarkets.MarketAnalytics? {
     // Call the getMarketAnalytics function on the FlowWagerMarkets contract
     let analytics = FlowWagerMarkets.getMarketAnalytics(marketId: marketId)
 

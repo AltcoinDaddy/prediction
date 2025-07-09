@@ -2,8 +2,8 @@
 // Purpose: Advanced market management, analytics, and creator statistics for FlowWager
 
 import FlowWager from "FlowWager" // Import the main FlowWager contract, resolved by flow.json
-import FlowWagerTypes from "./FlowWagerTypes.cdc" // Import the shared types
-import MarketDataProvider from "./MarketDataProvider.cdc" // Import the interface
+import FlowWagerTypes from "FlowWagerTypes" // Import the shared types by name
+import MarketDataProvider from "MarketDataProvider" // Import the interface by name
 
 // MarketDataProvider interface is now in its own file.
 // MarketDataView struct is now in FlowWagerTypes.cdc

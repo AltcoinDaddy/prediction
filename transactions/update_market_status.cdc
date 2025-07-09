@@ -19,9 +19,10 @@ transaction(marketId: UInt64) {
     //     // TODO: Consider emitting MarketStatusUpdated event here or ensure trySetToPendingResolution does.
     // }
 
-    prepare(signer: AuthAccount) {
+    prepare(signer: &Account) {
         // No specific signer state needed for this transaction as anyone can trigger it,
-        // provided the target `triggerMarketStatusUpdate` function is public.
+        // if the target `triggerMarketStatusUpdate` function is public and doesn't require auth.
+        // Using &Account as the most basic form of signer.
     }
 
     execute {

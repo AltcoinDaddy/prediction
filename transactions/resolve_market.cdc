@@ -15,11 +15,11 @@ transaction(marketId: UInt64, outcome: String, evidenceURL: String) {
 
     let adminCapability: &FlowWager.AdminCapability
 
-    prepare(signer: AuthAccount) {
+    prepare(signer: auth(Storage) &Account) {
         // Borrow the admin capability from the signer's account.
         // Assumes admins store their capability at /storage/flowWagerAdminCapability.
         self.adminCapability = signer.storage.borrow<&FlowWager.AdminCapability>(from: /storage/flowWagerAdminCapability)
-            ?? panic("Could not borrow AdminCapability from signer. Ensure you are an admin and the capability is at the correct path.")
+            ?? panic(message: "Could not borrow AdminCapability from signer. Ensure you are an admin and the capability is at the correct path.")
 
         // The FlowWager.resolveMarket function itself performs permission checks.
     }

@@ -1,4 +1,5 @@
 import FlowWager from "FlowWager"
+import FlowWagerTypes from "FlowWagerTypes" // Import for MarketResolutionInfo
 
 // Imports are now named and will be resolved by flow.json
 
@@ -8,17 +9,17 @@ WARNING: Batch operations can be gas-intensive and may hit transaction limits.
 If one resolution fails, the entire batch rolls back.
 
 Parameters:
-- marketResolutions: [{marketId: UInt64, outcome: String, evidenceURL: String}]
+- marketResolutions: [FlowWagerTypes.MarketResolutionInfo]
   An array of structs, each detailing a market to resolve.
 */
 
-transaction(marketResolutions: [{marketId: UInt64, outcome: String, evidenceURL: String}]) {
+transaction(marketResolutions: [FlowWagerTypes.MarketResolutionInfo]) {
 
     let adminCapability: &FlowWager.AdminCapability
 
-    prepare(signer: AuthAccount) {
+    prepare(signer: auth(Storage) &Account) { // Updated for Cadence 1.0
         self.adminCapability = signer.storage.borrow<&FlowWager.AdminCapability>(from: /storage/flowWagerAdminCapability)
-            ?? panic("Could not borrow AdminCapability from signer. Ensure you are an admin and the capability is at the correct path.")
+            ?? panic(message: "Could not borrow AdminCapability from signer. Ensure you are an admin and the capability is at the correct path.")
 
         // FlowWager.resolveMarket (called in loop) checks "resolve_market" permission.
         // A specific "batch_resolve_markets" permission could be added to adminCap for this tx if desired.

@@ -20,11 +20,12 @@ transaction(marketId: UInt64) {
     // this transaction will not function for fund transfer and a different approach is needed.
     // See comments in FlowWager.cdc around claimWinnings function.
 
-    prepare(signer: AuthAccount) {
+    prepare(signer: auth(Capabilities) &Account) {
         // Get the user's FlowToken Receiver capability.
         // Assumes it's published at the standard public path for FlowToken.
+        // Need auth(Capabilities) to access signer.capabilities.borrow
         self.userFlowTokenReceiver = signer.capabilities.borrow<&{FungibleToken.Receiver}>(/public/flowTokenReceiver)
-            ?? panic("Could not borrow Receiver capability from the signer's account. Make sure it's published at /public/flowTokenReceiver.")
+            ?? panic(message: "Could not borrow Receiver capability from the signer's account. Make sure it's published at /public/flowTokenReceiver.")
     }
 
     execute {
@@ -40,7 +41,9 @@ transaction(marketId: UInt64) {
             log("Winnings deposited to signer's account.")
         } else {
             log("No winnings to claim or already claimed for market ID: ".concat(marketId.toString()))
-            destroy claimedVault // Destroy the empty vault
+            // In Cadence 1.0, 'destroy' is removed. Empty vaults are implicitly destroyed.
+            // If claimedVault is an optional that's nil, this branch isn't hit.
+            // If claimedVault is non-nil and empty, it's handled when it goes out of scope.
         }
         // WinningsClaimed event should be emitted by the FlowWager contract if winnings > 0.0
     }

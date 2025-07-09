@@ -14,11 +14,11 @@ transaction(adminToRemoveAddress: Address) {
 
     let callingAdminCapability: &FlowWager.AdminCapability
 
-    prepare(signer: AuthAccount) {
+    prepare(signer: auth(Storage) &Account) {
         // Borrow the calling admin's capability from their account.
         // Assumes admins store their capability at /storage/flowWagerAdminCapability.
         self.callingAdminCapability = signer.storage.borrow<&FlowWager.AdminCapability>(from: /storage/flowWagerAdminCapability)
-            ?? panic("Could not borrow AdminCapability from signer. Ensure you are an admin and the capability is at the correct path.")
+            ?? panic(message: "Could not borrow AdminCapability from signer. Ensure you are an admin and the capability is at the correct path.")
 
         // The FlowWager.removeAdmin function itself performs permission and other necessary checks.
     }

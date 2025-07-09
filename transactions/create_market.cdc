@@ -22,11 +22,11 @@ transaction(title: String, description: String, categoryRawValue: UInt8, endTime
     let paymentVault: @FungibleToken.Vault
     let marketCreator: Address
 
-    prepare(signer: AuthAccount) {
+    prepare(signer: auth(Storage) &Account) {
         self.marketCreator = signer.address
 
         let vaultRef = signer.storage.borrow<&FlowToken.Vault>(from: /storage/flowTokenVault)
-            ?? panic("Could not borrow reference to the signer's FlowToken Vault")
+            ?? panic(message: "Could not borrow reference to the signer's FlowToken Vault")
 
         // The FlowWager.createMarket function handles the logic for fee waiver if creator is admin.
         // This transaction prepares a vault with the specified fee amount.
