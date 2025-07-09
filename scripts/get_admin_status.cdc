@@ -38,8 +38,17 @@ access(all) fun main(adminAddress: Address): {String: AnyStruct} {
 
         log("Address ".concat(adminAddress.toString()).concat(" IS an admin."))
         if permissions != nil {
-            // Cadence 1.0: String array .join is not standard. Manual join or log raw array.
-            log("Permissions (raw): ".concat(permissions!.toString()))
+            var permissionsString = ""
+            let perms = permissions!
+            if perms.length > 0 {
+                permissionsString = perms[0]
+                var i = 1
+                while i < perms.length {
+                    permissionsString = permissionsString.concat(", ").concat(perms[i])
+                    i = i + 1
+                }
+            }
+            log("Permissions: [".concat(permissionsString).concat("]"))
         } else {
             // This case should ideally not happen if isAdmin is true and data is consistent.
             log("Permissions could not be retrieved, though address is marked as admin.")

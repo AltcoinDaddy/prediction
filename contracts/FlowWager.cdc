@@ -1,6 +1,6 @@
 import FungibleToken from "FungibleToken"
 import FlowToken from "FlowToken"
-import FlowWagerTypes from "./FlowWagerTypes.cdc" // Import the new types contract
+import FlowWagerTypes from "FlowWagerTypes" // Import the new types contract by name
 
 // Imports are now named and will be resolved by flow.json
 
@@ -195,9 +195,8 @@ access(all) contract FlowWager {
             }
         }
 
-        destroy() {
-            // TODO: Log destruction if needed
-        }
+        // Custom destructors are removed in Cadence 1.0
+        // Resources are automatically destroyed when they go out of scope.
     }
 
     access(all) resource AdminCapability {
@@ -289,11 +288,11 @@ access(all) contract FlowWager {
              assert(payment.balance >= self.MARKET_CREATION_FEE, message: "Insufficient payment for market creation fee")
              let feeVault <- payment.withdraw(amount: self.MARKET_CREATION_FEE)
              let platformVaultRef = self.account.storage.borrow<&FlowToken.Vault>(from: self.platformVaultPath)
-                ?? panic("Could not borrow platform vault reference")
+                ?? panic(message: "Could not borrow platform vault reference")
              platformVaultRef.deposit(from: <-feeVault)
         }
 
-        let marketCategory = FlowWagerTypes.MarketCategory(rawValue: category) ?? panic("Invalid category raw value")
+        let marketCategory = FlowWagerTypes.MarketCategory(rawValue: category) ?? panic(message: "Invalid category raw value")
 
         let marketId = self.nextMarketId
         let newMarket <- create Market(
@@ -301,13 +300,15 @@ access(all) contract FlowWager {
             creator: marketCreator, creationTime: getCurrentBlock().timestamp, endTime: endTime, options: options
         )
 
-        let oldMarket <- self.markets.insert(key: marketId, <-newMarket)
-        destroy oldMarket
+        let oldMarket: @Market? <- self.markets.insert(key: marketId, <-newMarket)
+        // oldMarket (if non-nil) is implicitly destroyed if not used further. Explicit 'destroy' removed.
 
         self.nextMarketId = self.nextMarketId + 1
 
-        // Passed-in payment vault is consumed.
-        destroy payment
+        // Passed-in payment vault (@FungibleToken.Vault) must be consumed.
+        // If payment vault is not fully depleted by fee withdrawal, remaining tokens are implicitly lost
+        // when 'payment' goes out of scope as it's an owned resource parameter.
+        // Explicit 'destroy payment' removed.
 
         let currentCreatorCount = self.userMarketsCreatedCount[marketCreator] ?? 0
         self.userMarketsCreatedCount[marketCreator] = currentCreatorCount + 1
@@ -321,13 +322,13 @@ access(all) contract FlowWager {
             payment.balance > 0.0 : "Prediction amount must be positive"
             self.markets[marketId] != nil : "Market with the given ID does not exist"
         }
-        let market = self.markets[marketId] ?? panic("Market not found")
+        let market = self.markets[marketId] ?? panic(message: "Market not found")
         let predictor = payment.owner!.address
 
         market.placePrediction(predictor: predictor, option: option, amount: payment.balance)
 
         let platformVaultRef = self.account.storage.borrow<&FlowToken.Vault>(from: self.platformVaultPath)
-            ?? panic("Could not borrow platform vault reference for prediction")
+            ?? panic(message: "Could not borrow platform vault reference for prediction")
         platformVaultRef.deposit(from: <-payment)
 
         let currentPredictorCount = self.userPredictionsPlacedCount[predictor] ?? 0
@@ -388,8 +389,8 @@ access(all) contract FlowWager {
         }
 
         let newAdminCap <- create AdminCapability(adminAddress: adminAddress, permissions: permissions)
-        let oldCap <- self.adminCapabilities.insert(key: adminAddress, <-newAdminCap)
-        destroy oldCap
+        let oldCap: @AdminCapability? <- self.adminCapabilities.insert(key: adminAddress, <-newAdminCap)
+        // oldCap (if non-nil) is implicitly destroyed. Explicit 'destroy' removed.
 
         self.admins[adminAddress] = true
         // TODO: Emit AdminAdded event
@@ -406,8 +407,8 @@ access(all) contract FlowWager {
         }
 
         self.admins.remove(key: adminAddress)
-        let removedCap <- self.adminCapabilities.remove(key: adminAddress)
-        destroy removedCap
+        let removedCap: @AdminCapability? <- self.adminCapabilities.remove(key: adminAddress)
+        // removedCap (if non-nil) is implicitly destroyed. Explicit 'destroy' removed.
         // TODO: Emit AdminRemoved event
         log("Admin removed")
     }
@@ -445,7 +446,7 @@ access(all) contract FlowWager {
         }
 
         let platformVaultRef = self.account.storage.borrow<&FlowToken.Vault>(from: self.platformVaultPath)
-            ?? panic("Could not borrow platform vault reference for fee withdrawal")
+            ?? panic(message: "Could not borrow platform vault reference for fee withdrawal")
 
         assert(platformVaultRef.balance >= amount, message: "Insufficient balance in platform vault.")
 
@@ -475,7 +476,7 @@ access(all) contract FlowWager {
     }
 
     access(all) fun getMarketsByCategory(category: UInt8): [{String: AnyStruct}] {
-        let categoryEnum = FlowWagerTypes.MarketCategory(rawValue: category) ?? panic("Invalid category raw value")
+        let categoryEnum = FlowWagerTypes.MarketCategory(rawValue: category) ?? panic(message: "Invalid category raw value")
         let filteredMarketInfos: [{String: AnyStruct}] = []
         let marketIds = self.markets.keys
         for id in marketIds {
@@ -489,7 +490,7 @@ access(all) contract FlowWager {
     }
 
     access(all) fun getMarketsByStatus(status: UInt8): [{String: AnyStruct}] {
-        let statusEnum = FlowWagerTypes.MarketStatus(rawValue: status) ?? panic("Invalid status raw value")
+        let statusEnum = FlowWagerTypes.MarketStatus(rawValue: status) ?? panic(message: "Invalid status raw value")
         // Removed loop that called market.trySetToPendingResolution()
 
         let filteredMarketInfos: [{String: AnyStruct}] = []
@@ -515,7 +516,7 @@ access(all) contract FlowWager {
         var totalVolumeAcrossAllMarkets = 0.0
 
         let platformVaultRef = self.account.storage.borrow<&FlowToken.Vault>(from: self.platformVaultPath)
-            ?? panic("Could not borrow platform vault reference for stats")
+            ?? panic(message: "Could not borrow platform vault reference for stats")
 
         for key in self.markets.keys {
             let market = self.markets[key]!
@@ -538,7 +539,7 @@ access(all) contract FlowWager {
     }
 
     access(all) fun getUserPredictionsForMarket(marketId: UInt64, userAddress: Address): {String: UFix64}? {
-        let market = self.markets[marketId] ?? panic("Market not found")
+        let market = self.markets[marketId] ?? panic(message: "Market not found")
         if let userPredictions = market.predictions[userAddress] {
             return userPredictions
         }

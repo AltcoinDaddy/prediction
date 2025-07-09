@@ -65,6 +65,18 @@ access(all) contract FlowWagerTypes {
         }
     }
 
+    access(all) struct MarketResolutionInfo {
+        access(all) let marketId: UInt64
+        access(all) let outcome: String
+        access(all) let evidenceURL: String
+
+        init(marketId: UInt64, outcome: String, evidenceURL: String) {
+            self.marketId = marketId
+            self.outcome = outcome
+            self.evidenceURL = evidenceURL
+        }
+    }
+
     // Note: FlowWagerTypes contract itself doesn't have an init() function
     // as it's primarily a container for type definitions.
     // If it were to hold state, an init() would be needed.

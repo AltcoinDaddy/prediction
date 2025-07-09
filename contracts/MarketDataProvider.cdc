@@ -2,7 +2,7 @@
 // This interface represents what FlowWagerMarkets expects the FlowWager contract to provide.
 
 // Import FlowWagerTypes to access the MarketDataView struct.
-import FlowWagerTypes from "./FlowWagerTypes.cdc"
+import FlowWagerTypes from "FlowWagerTypes" // Import by name
 
 access(all) contract interface MarketDataProvider {
     access(all) fun getAllMarketDataViews(): [FlowWagerTypes.MarketDataView]

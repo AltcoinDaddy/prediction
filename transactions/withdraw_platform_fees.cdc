@@ -18,15 +18,17 @@ transaction(amount: UFix64, recipientAddress: Address) {
     let callingAdminCapability: &FlowWager.AdminCapability
     let feeReceiver: &{FungibleToken.Receiver}
 
-    prepare(signer: AuthAccount) {
+    prepare(signer: auth(Storage) &Account) { // auth(Storage) for signer.storage.borrow
         self.callingAdminCapability = signer.storage.borrow<&FlowWager.AdminCapability>(from: /storage/flowWagerAdminCapability)
-            ?? panic("Could not borrow AdminCapability from signer. Ensure you are an admin and the capability is at the correct path.")
+            ?? panic(message: "Could not borrow AdminCapability from signer. Ensure you are an admin and the capability is at the correct path.")
 
         // Get the public Receiver capability for the recipient address.
         // Assumes standard /public/flowTokenReceiver path.
-        self.feeReceiver = getAccount(recipientAddress)
-            .capabilities.borrow<&{FungibleToken.Receiver}>(/public/flowTokenReceiver)
-            ?? panic("Could not borrow Receiver capability for the recipient. Ensure it's published at /public/flowTokenReceiver.")
+        // getAccount().capabilities.borrow requires auth(Capabilities) on the account being called, not the signer.
+        // However, the getAccount(recipientAddress) itself does not require signer authorization.
+        let recipientAccount = getAccount(recipientAddress)
+        self.feeReceiver = recipientAccount.capabilities.borrow<&{FungibleToken.Receiver}>(/public/flowTokenReceiver)
+            ?? panic(message: "Could not borrow Receiver capability for the recipient. Ensure it's published at /public/flowTokenReceiver.")
     }
 
     execute {

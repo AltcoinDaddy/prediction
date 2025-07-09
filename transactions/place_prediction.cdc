@@ -18,11 +18,11 @@ transaction(marketId: UInt64, option: String, amount: UFix64) {
     let predictionPaymentVault: @FungibleToken.Vault
     let predictorAddress: Address
 
-    prepare(signer: AuthAccount) {
+    prepare(signer: auth(Storage) &Account) {
         self.predictorAddress = signer.address
 
         let vaultRef = signer.storage.borrow<&FlowToken.Vault>(from: /storage/flowTokenVault)
-            ?? panic("Could not borrow reference to the signer's FlowToken Vault")
+            ?? panic(message: "Could not borrow reference to the signer's FlowToken Vault")
 
         assert(vaultRef.balance >= amount, message: "Insufficient FLOW balance for this prediction amount.")
         self.predictionPaymentVault <- vaultRef.withdraw(amount: amount)
